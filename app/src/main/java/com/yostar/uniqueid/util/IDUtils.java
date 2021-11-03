@@ -1,41 +1,28 @@
 package com.yostar.uniqueid.util;
 
-import static android.content.Context.BLUETOOTH_SERVICE;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
-import android.webkit.WebSettings;
 
 import androidx.core.content.ContextCompat;
 
-
-import com.yostar.uniqueid.Interface.CallbackGAID;
 import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+import com.yostar.uniqueid.Interface.CallbackValue;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.Inet4Address;
-import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -368,7 +355,6 @@ public class IDUtils {
         return macAddress;
     }
 
-    @SuppressLint("HardwareIds")
     public static String getMacFormWifi(Context context) {
         if (context == null) {
             return null;
@@ -436,38 +422,6 @@ public class IDUtils {
         return null;
     }
 
-    //--bluetoothmac
-    public static String getBluetoothMac(Context context) {
-        String bluetoothMac = "";
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            bluetoothMac = BluetoothAdapter.getDefaultAdapter().getAddress();
-        } else {
-            try {
-                BluetoothManager bluetoothManager = (BluetoothManager) context.getApplicationContext().getSystemService(BLUETOOTH_SERVICE);
-                BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
-                Field field = bluetoothAdapter.getClass().getDeclaredField("mService");
-                // 参数值为true，禁用访问控制检查
-                field.setAccessible(true);
-                Object bluetoothManagerService = field.get(bluetoothAdapter);
-                if (bluetoothManagerService == null) {
-                    return bluetoothMac;
-                }
-                Method method = bluetoothManagerService.getClass().getMethod("getAddress");
-                Object address = method.invoke(bluetoothManagerService);
-                if (address != null && address instanceof String) {
-                    return (String) address;
-                } else {
-                    return bluetoothMac;
-                }
-                //抛一个总异常省的一堆代码...
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return bluetoothMac;
-    }
-    //--said
-
     //--uuid
 
     public static String getUUID() {
@@ -477,118 +431,40 @@ public class IDUtils {
 
 
     //--gaid
-    public static void getGAID(Context context, CallbackGAID callbackGAID) {
+    public static void getGAID(Context context, CallbackValue callbackValue) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    callbackGAID.onCallback(AdvertisingIdClient.getAdvertisingIdInfo(context).getId());
+                    callbackValue.onCallback(AdvertisingIdClient.getAdvertisingIdInfo(context).getId());
                 } catch (Exception e) {
-                    callbackGAID.onCallback("");
+                    callbackValue.onCallback("");
                 }
             }
         }).start();
     }
 
-    //--ip
-    public static String getIpAddress(Context context){
-        NetworkInfo info = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
-        if (info != null && info.isConnected()) {
-            // 3/4g网络
-            if (info.getType() == ConnectivityManager.TYPE_MOBILE) {
-                try {
-                    for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en.hasMoreElements(); ) {
-                        NetworkInterface intf = en.nextElement();
-                        for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                            InetAddress inetAddress = enumIpAddr.nextElement();
-                            if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
-                                return inetAddress.getHostAddress();
-                            }
-                        }
-                    }
-                } catch (SocketException e) {
-                    e.printStackTrace();
-                }
-
-            } else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
-                //  wifi网络
-                WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                String ipAddress = intIP2StringIP(wifiInfo.getIpAddress());
-                return ipAddress;
-            }  else if (info.getType() == ConnectivityManager.TYPE_ETHERNET){
-                // 有限网络
-                return getLocalIp();
-            }
-        }
-        return null;
-    }
-
-    private static String intIP2StringIP(int ip) {
-        return (ip & 0xFF) + "." +
-                ((ip >> 8) & 0xFF) + "." +
-                ((ip >> 16) & 0xFF) + "." +
-                (ip >> 24 & 0xFF);
-    }
-
-
-    // 获取有限网IP
-    private static String getLocalIp() {
-        try {
-            for (Enumeration<NetworkInterface> en = NetworkInterface
-                    .getNetworkInterfaces(); en.hasMoreElements(); ) {
-                NetworkInterface intf = en.nextElement();
-                for (Enumeration<InetAddress> enumIpAddr = intf
-                        .getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
-                    InetAddress inetAddress = enumIpAddr.nextElement();
-                    if (!inetAddress.isLoopbackAddress()
-                            && inetAddress instanceof Inet4Address) {
-                        return inetAddress.getHostAddress();
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-
-        }
-        return "0.0.0.0";
-
-    }
-
-    //--ua
-    public static String getUserAgent(Context context) {
-        String userAgent = "";
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            try {
-                userAgent = WebSettings.getDefaultUserAgent(context);
-            } catch (Exception e) {
-                userAgent = System.getProperty("http.agent");
-            }
-        } else {
-            userAgent = System.getProperty("http.agent");
-        }
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0, length = userAgent.length(); i < length; i++) {
-            char c = userAgent.charAt(i);
-            if (c <= '\u001f' || c >= '\u007f') {
-                sb.append(String.format("\\u%04x", (int) c));
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
     //--sn
     public static String getDeviceSN(Context context){
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
-                return "";
-            } else {
-                return Build.getSerial();
+        String serial = null;
+        try {
+            // >=10.0获取不到
+            if(Build.VERSION.SDK_INT == Build.VERSION_CODES.P) { // 9.0 需要权限READ_PHONE_STATE
+                if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                    serial = Build.getSerial();
+                }
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) { // 2.3-8.1
+                serial = Build.SERIAL;
+            } else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD) { // <2.3 反射
+                Class<?> c = Class.forName("android.os.SystemProperties");
+                Method get = c.getMethod("get", String.class);
+                serial = (String) get.invoke(c, "ro.serialno");
             }
-        } else {
-            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return serial;
     }
 
+    //--said
 }

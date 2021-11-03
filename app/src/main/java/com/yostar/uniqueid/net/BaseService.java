@@ -1,7 +1,5 @@
 package com.yostar.uniqueid.net;
 
-import android.content.res.Resources;
-
 import com.yostar.uniqueid.model.BaseRsp;
 import com.yostar.uniqueid.model.InitReq;
 import com.yostar.uniqueid.model.InitRsp;
@@ -10,6 +8,7 @@ import com.yostar.uniqueid.model.LoginRsp;
 import com.yostar.uniqueid.util.GsonUtils;
 import com.yostar.uniqueid.util.LogUtil;
 import com.yostar.uniqueid.util.MessageDigestUtils;
+import com.yostar.uniqueid.SDKConst;
 import com.yostar.uniqueid.util.SPUtils;
 
 import java.util.ArrayList;
@@ -28,8 +27,7 @@ public class BaseService {
 
   private static final String BASE_URL = "https://test-ad-api.yostar.net";
   private static final String SIGN_TAG = "4aeb195cd69ed93520b9b4129636264e0cdc0153";
-  public static final String SP_DEVICE_ID = "device_id";
-  public static final String SP_ATTR_ID = "attr_id";
+
   protected Retrofit retrofit2;
   protected ServiceApi mBaseServiceApi;
 
@@ -44,7 +42,7 @@ public class BaseService {
   }
 
   protected String getHeaderAuth(String jsonBody) {
-    String deviceID = SPUtils.getInstance().getString(SP_DEVICE_ID, "");
+    String deviceID = SPUtils.getInstance().getString(SDKConst.SP_DEVICE_ID, "");
     return getHeaderAuth(deviceID, jsonBody);
   }
 
@@ -62,17 +60,8 @@ public class BaseService {
   }
 
   //用户公告
-  public void netInit() {
+  public void netInit(List<InitReq.TypeData> typeData) {
     InitReq initReq = new InitReq();
-    List<InitReq.TypeData> typeData = new ArrayList<>();
-    InitReq.TypeData typeData1 = new InitReq.TypeData();
-    typeData1.setType("imei");
-    typeData1.setData("5c622a87-9080-4b3b--");
-    InitReq.TypeData typeData2 = new InitReq.TypeData();
-    typeData2.setType("oaid");
-    typeData2.setData("fb96bfd0-bc75-4acd--");
-    typeData.add(typeData1);
-    typeData.add(typeData2);
     initReq.setType_data(typeData);
 
     String jsonBody = GsonUtils.gsonToString(initReq);
@@ -82,11 +71,11 @@ public class BaseService {
       public void onResponse(Call<BaseRsp<InitRsp>> call, Response<BaseRsp<InitRsp>> response) {
         if (response.code() == 200) {
           String deviceID = response.body().data.getDevice_id();
-          String attrID = response.body().data.getAttr_id();
-          SPUtils.getInstance().put(SP_DEVICE_ID, deviceID);
-          SPUtils.getInstance().put(SP_ATTR_ID, attrID);
+          String UDID = response.body().data.getUD_id();
+          SPUtils.getInstance().put(SDKConst.SP_DEVICE_ID, deviceID);
+          SPUtils.getInstance().put(SDKConst.SP_UD_ID, UDID);
           LogUtil.i(deviceID);
-          LogUtil.i(attrID);
+          LogUtil.i(UDID);
         }
       }
 

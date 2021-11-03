@@ -33,10 +33,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="IMEI:"/>
+                android:text="imei:"/>
 
-            <TextView
-                android:id="@+id/tv_imei"
+            <EditText
+                android:id="@+id/et_imei"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -50,10 +50,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="AndroidID:"/>
+                android:text="android_id:"/>
 
-            <TextView
-                android:id="@+id/tv_android_id"
+            <EditText
+                android:id="@+id/et_android_id"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -67,10 +67,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="WiFiMac:"/>
+                android:text="mac:"/>
 
-            <TextView
-                android:id="@+id/tv_wifi_mac"
+            <EditText
+                android:id="@+id/et_mac"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -84,10 +84,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BlueToothMac:"/>
+                android:text="gaid:"/>
 
-            <TextView
-                android:id="@+id/tv_bluetooth_mac"
+            <EditText
+                android:id="@+id/et_gaid"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -101,10 +101,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="OAID:"/>
+                android:text="sn:"/>
 
-            <TextView
-                android:id="@+id/tv_oaid"
+            <EditText
+                android:id="@+id/et_sn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -118,10 +118,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="UUID:"/>
+                android:text="ua:"/>
 
-            <TextView
-                android:id="@+id/tv_uuid"
+            <EditText
+                android:id="@+id/et_ua"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -135,10 +135,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="GAID:"/>
+                android:text="ip_in:"/>
 
-            <TextView
-                android:id="@+id/tv_gaid"
+            <EditText
+                android:id="@+id/et_ip_in"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -152,10 +152,28 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="SN:"/>
+                android:text="ip_out:"/>
+
+            <EditText
+                android:id="@+id/et_ip_out"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tv_sn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="language:"/>
+
+            <EditText
+                android:id="@+id/et_language"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -169,10 +187,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="IP:"/>
+                android:text="manufacturer:"/>
 
-            <TextView
-                android:id="@+id/tv_ip"
+            <EditText
+                android:id="@+id/et_manufacturer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -186,10 +204,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="UA:"/>
+                android:text="device_type:"/>
 
-            <TextView
-                android:id="@+id/tv_ua"
+            <EditText
+                android:id="@+id/et_device_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -203,10 +221,265 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Other:"/>
+                android:text="model:"/>
+
+            <EditText
+                android:id="@+id/et_model"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tv_other"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="os_type:"/>
+
+            <EditText
+                android:id="@+id/et_os_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="os_version:"/>
+
+            <EditText
+                android:id="@+id/et_os_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="carrier:"/>
+
+            <EditText
+                android:id="@+id/et_carrier"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="screen_height:"/>
+
+            <EditText
+                android:id="@+id/et_screen_height"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="screen_width:"/>
+
+            <EditText
+                android:id="@+id/et_screen_width"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="network_type:"/>
+
+            <EditText
+                android:id="@+id/et_network_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="timezone_offset:"/>
+
+            <EditText
+                android:id="@+id/et_timezone_offset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="is_first_open:"/>
+
+            <EditText
+                android:id="@+id/et_is_first_open"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="environment:"/>
+
+            <EditText
+                android:id="@+id/et_environment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="first_open_time:"/>
+
+            <EditText
+                android:id="@+id/et_first_open_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="country:"/>
+
+            <EditText
+                android:id="@+id/et_country"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="province:"/>
+
+            <EditText
+                android:id="@+id/et_province"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="city:"/>
+
+            <EditText
+                android:id="@+id/et_city"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="longitude:"/>
+
+            <EditText
+                android:id="@+id/et_longitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="latitude:"/>
+
+            <EditText
+                android:id="@+id/et_latitude"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -242,7 +515,7 @@
             android:layout_height="wrap_content"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:text="查看device_id,yo_id"/>
+            android:text="查看device_id,udid"/>
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -269,10 +542,10 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="yo_id:"/>
+                android:text="udid:"/>
 
             <TextView
-                android:id="@+id/tv_yo_id"
+                android:id="@+id/tv_udid"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
 
@@ -296,39 +569,6 @@
             android:textStyle="bold"
             android:text="获取游戏账号（account_id）"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="注册新账号"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="account_id:"/>
-
-            <TextView
-                android:id="@+id/tv_account_id"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/btn_new_account_id"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="点击生成"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="登录旧账号"/>
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -342,13 +582,18 @@
             <EditText
                 android:id="@+id/et_account_id"
                 android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                />
+                android:layout_height="wrap_content"/>
 
         </LinearLayout>
 
         <Button
-            android:id="@+id/btn_old_account_id"
+            android:id="@+id/btn_account_id"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="点击生成"/>
+
+        <Button
+            android:id="@+id/btn_login"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="提交"/>

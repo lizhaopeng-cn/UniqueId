@@ -1,31 +1,79 @@
 package com.yostar.uniqueid;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.text.TextUtils;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import android.Manifest;
-import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Bundle;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.yostar.uniqueid.Interface.CallbackGAID;
+import com.yostar.uniqueid.Interface.CallbackValue;
+import com.yostar.uniqueid.model.InitReq;
 import com.yostar.uniqueid.net.BaseService;
 import com.yostar.uniqueid.util.DevicesUtils;
 import com.yostar.uniqueid.util.IDUtils;
-import com.yostar.uniqueid.util.MemoryUtils;
+import com.yostar.uniqueid.util.LocationUtils;
+import com.yostar.uniqueid.util.NetUtils;
 import com.yostar.uniqueid.util.OtherUtils;
 import com.yostar.uniqueid.util.SPUtils;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private EditText et_imei;
+    private EditText et_android_id;
+    private EditText et_mac;
+    private EditText et_gaid;
+    private EditText et_sn;
+    private EditText et_ua;
+    private EditText et_ip_in;
+    private EditText et_ip_out;
+    private EditText et_language;
+    private EditText et_manufacturer;
+    private EditText et_device_type;
+    private EditText et_model;
+    private EditText et_os_type;
+    private EditText et_os_version;
+    private EditText et_carrier;
+    private EditText et_screen_height;
+    private EditText et_screen_width;
+    private EditText et_network_type;
+    private EditText et_timezone_offset;
+    private EditText et_is_first_open;
+    private EditText et_environment;
+    private EditText et_first_open_time;
+    private EditText et_country;
+    private EditText et_province;
+    private EditText et_city;
+    private EditText et_longitude;
+    private EditText et_latitude;
+
+    private TextView tv_device_id;
+    private TextView tv_udid;
+    private EditText et_account_id;
+
+    private Button btn_permission;
+    private Button btn_init;
+    private Button btn_restore;
+    private Button btn_get_id;
+    private Button btn_account_id;
+    private Button btn_login;
 
     private ActivityResultLauncher<String[]> requestPermissionLauncher;
 
@@ -34,65 +82,203 @@ public class MainActivity extends AppCompatActivity {
         selectedPermission();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        EditText etOldAccountId = findViewById(R.id.et_old_account_id);
-        TextView tvDeviceID = findViewById(R.id.tv_device_id);
-        TextView tvAttrID = findViewById(R.id.tv_attr_id);
-        findViewById(R.id.btn_permission).setOnClickListener(v -> {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                getPermissions();
-            }
-        });
+        setFirstOpen();
+        bindView();
+        setOnClick();
         setView();
-        setPermissionView();
-        findViewById(R.id.btn_init).setOnClickListener(v -> {
-            BaseService baseService = new BaseService();
-            baseService.netInit();
-        });
+    }
 
-        findViewById(R.id.btn_login).setOnClickListener(v -> {
-            BaseService baseService = new BaseService();
-            baseService.netLogin(etOldAccountId.getText().toString());
-        });
+    private void setFirstOpen() {
+        // 是否第一个打开 0否1是
+        int isFirstOpen = SPUtils.getInstance().getInt(SDKConst.SP_IS_FIRST_OPEN, -1);
+        if (isFirstOpen == -1) {
+            SPUtils.getInstance().put(SDKConst.SP_IS_FIRST_OPEN, 1);
+        } else if (isFirstOpen == 1) {
+            SPUtils.getInstance().put(SDKConst.SP_IS_FIRST_OPEN, 0);
+        }
+        // 第一个打开时间
+        long timeFirstOpen = SPUtils.getInstance().getLong(SDKConst.SP_TIME_FIRST_OPEN, 0);
+        if (timeFirstOpen == 0) {
+            SPUtils.getInstance().put(SDKConst.SP_TIME_FIRST_OPEN, new Date().getTime());
+        }
+    }
 
-        findViewById(R.id.btn_get_id).setOnClickListener(v -> {
-            tvDeviceID.setText(SPUtils.getInstance().getString(BaseService.SP_DEVICE_ID));
-            tvAttrID.setText(SPUtils.getInstance().getString(BaseService.SP_DEVICE_ID));
-        });
+    private void bindView() {
+        et_imei = findViewById(R.id.et_imei);
+        et_android_id = findViewById(R.id.et_android_id);
+        et_mac = findViewById(R.id.et_mac);
+        et_gaid = findViewById(R.id.et_gaid);
+        et_sn = findViewById(R.id.et_sn);
+        et_ua = findViewById(R.id.et_ua);
+        et_ip_in = findViewById(R.id.et_ip_in);
+        et_ip_out = findViewById(R.id.et_ip_out);
+        et_language = findViewById(R.id.et_language);
+        et_manufacturer = findViewById(R.id.et_manufacturer);
+        et_device_type = findViewById(R.id.et_device_type);
+        et_model = findViewById(R.id.et_model);
+        et_os_type = findViewById(R.id.et_os_type);
+        et_os_version = findViewById(R.id.et_os_version);
+        et_carrier = findViewById(R.id.et_carrier);
+        et_screen_height = findViewById(R.id.et_screen_height);
+        et_screen_width = findViewById(R.id.et_screen_width);
+        et_network_type = findViewById(R.id.et_network_type);
+        et_timezone_offset = findViewById(R.id.et_timezone_offset);
+        et_is_first_open = findViewById(R.id.et_is_first_open);
+        et_environment = findViewById(R.id.et_environment);
+        et_first_open_time = findViewById(R.id.et_first_open_time);
+        et_country = findViewById(R.id.et_country);
+        et_province = findViewById(R.id.et_province);
+        et_city = findViewById(R.id.et_city);
+        et_longitude = findViewById(R.id.et_longitude);
+        et_latitude = findViewById(R.id.et_latitude);
+
+        tv_device_id = findViewById(R.id.tv_device_id);
+        tv_udid = findViewById(R.id.tv_udid);
+        et_account_id = findViewById(R.id.et_account_id);
+
+        btn_permission = findViewById(R.id.btn_permission);
+        btn_init = findViewById(R.id.btn_init);
+        btn_restore = findViewById(R.id.btn_restore);
+        btn_get_id = findViewById(R.id.btn_get_id);
+        btn_account_id = findViewById(R.id.btn_account_id);
+        btn_login = findViewById(R.id.btn_login);
+    }
+
+    private void setOnClick() {
+        btn_permission.setOnClickListener(MainActivity.this);
+        btn_init.setOnClickListener(MainActivity.this);
+        btn_restore.setOnClickListener(MainActivity.this);
+        btn_get_id.setOnClickListener(MainActivity.this);
+        btn_account_id.setOnClickListener(MainActivity.this);
+        btn_login.setOnClickListener(MainActivity.this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        BaseService baseService = new BaseService();
+        switch (v.getId()) {
+            case R.id.btn_permission:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    getPermissions();
+                }
+                break;
+            case R.id.btn_init:
+                baseService.netInit(getInitList());
+                break;
+            case R.id.btn_restore:
+                setView();
+                break;
+            case R.id.btn_get_id:
+                tv_device_id.setText(SPUtils.getInstance().getString(SDKConst.SP_DEVICE_ID));
+                tv_udid.setText(SPUtils.getInstance().getString(SDKConst.SP_UD_ID));
+                break;
+            case R.id.btn_account_id:
+                Random ran = new Random();
+                int num = ran.nextInt(999999);
+                et_account_id.setText(String.format("%06d", num));
+                break;
+            case R.id.btn_login:
+                String accoundId = et_account_id.getText().toString();
+                Pattern pattern = Pattern.compile("\\d{6}");
+                if (pattern.matcher(accoundId).matches()) {
+                    baseService.netLogin(accoundId);
+                } else {
+                    Toast.makeText(this, "account_id需为6位数字", Toast.LENGTH_SHORT).show();
+                }
+                break;
+        }
     }
 
     private void setView() {
-        ((TextView)findViewById(R.id.tv_android_id)).setText(IDUtils.getAndroidId(this));
-        ((TextView)findViewById(R.id.tv_wifi_mac)).setText(IDUtils.getMacAddress(this));
-        ((TextView)findViewById(R.id.tv_bluetooth_mac)).setText(IDUtils.getBluetoothMac(this));
-        ((TextView)findViewById(R.id.tv_uuid)).setText(IDUtils.getUUID());
-        ((TextView)findViewById(R.id.tv_ip)).setText(IDUtils.getIpAddress(this));
-        ((TextView)findViewById(R.id.tv_ua)).setText(IDUtils.getUserAgent(this));
-        ((TextView)findViewById(R.id.tv_sn)).setText(IDUtils.getDeviceSN(this));
-        IDUtils.getGAID(this, new CallbackGAID() {
+        et_imei.setText(IDUtils.getImeiOnly(this, 0));
+        et_android_id.setText(IDUtils.getAndroidId(this));
+        et_mac.setText(IDUtils.getMacAddress(this));
+        et_sn.setText(IDUtils.getDeviceSN(this));
+        et_ua.setText(NetUtils.getUserAgent(this));
+        et_ip_in.setText(NetUtils.getIpAddress(this));
+        et_ip_out.setText(NetUtils.getIpAddress(this));
+
+        et_language.setText(OtherUtils.getDeviceDefaultLanguage());
+        et_manufacturer.setText(DevicesUtils.getDeviceManufacturer());
+        et_device_type.setText(OtherUtils.isPad(this));
+        et_model.setText(DevicesUtils.getDeviceModel());
+        et_os_type.setText("Android");
+        et_os_version.setText(DevicesUtils.getDeviceRelease());
+        et_carrier.setText(OtherUtils.getNetworkOperatorName());
+        et_screen_height.setText(String.valueOf(OtherUtils.getDeviceHeight(this)));
+        et_screen_width.setText(String.valueOf(OtherUtils.getDeviceWidth(this)));
+        et_network_type.setText(OtherUtils.getNetworkState(this));
+        et_timezone_offset.setText(OtherUtils.getTimeZone());
+        et_is_first_open.setText(String.valueOf(SPUtils.getInstance().getInt(SDKConst.SP_IS_FIRST_OPEN, -1)));
+        et_first_open_time.setText(String.valueOf(SPUtils.getInstance().getLong(SDKConst.SP_TIME_FIRST_OPEN, 0)));
+        et_country.setText(LocationUtils.getInstance(this).getCountry());
+        et_province.setText(LocationUtils.getInstance(this).getProvince());
+        et_city.setText(LocationUtils.getInstance(this).getCity());
+        et_longitude.setText(LocationUtils.getInstance(this).getLongitude());
+        et_latitude.setText(LocationUtils.getInstance(this).getLatitude());
+
+        NetUtils.getOutNetIP(new CallbackValue() {
             @Override
-            public void onCallback(String gaid) {
+            public void onCallback(String value) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        ((TextView)findViewById(R.id.tv_gaid)).setText(gaid);
+                        et_ip_out.setText(value);
                     }
                 });
             }
         });
-        ((TextView)findViewById(R.id.tv_other)).setText(getDeviceAllInfo(this));
 
+        IDUtils.getGAID(this, new CallbackValue() {
+            @Override
+            public void onCallback(String value) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        et_gaid.setText(value);
+                    }
+                });
+            }
+        });
     }
 
-    private void setPermissionView() {
-        ((TextView)findViewById(R.id.tv_imei)).setText(IDUtils.getIMEI1(this));
+    private List<InitReq.TypeData> getInitList() {
+        List<InitReq.TypeData> typeData = new ArrayList<>();
+        typeData.add(new InitReq.TypeData("imei", et_imei.getText().toString()));
+        typeData.add(new InitReq.TypeData("android_id", et_android_id.getText().toString()));
+        typeData.add(new InitReq.TypeData("mac", et_mac.getText().toString()));
+        typeData.add(new InitReq.TypeData("sn", et_sn.getText().toString()));
+        typeData.add(new InitReq.TypeData("ua", et_ua.getText().toString()));
+        typeData.add(new InitReq.TypeData("ip_in", et_ip_in.getText().toString()));
+        typeData.add(new InitReq.TypeData("ip_out", et_ip_out.getText().toString()));
+        typeData.add(new InitReq.TypeData("ua", et_ua.getText().toString()));
+        typeData.add(new InitReq.TypeData("language", et_language.getText().toString()));
+        typeData.add(new InitReq.TypeData("manufacturer", et_manufacturer.getText().toString()));
+        typeData.add(new InitReq.TypeData("device_type", et_device_type.getText().toString()));
+        typeData.add(new InitReq.TypeData("model", et_model.getText().toString()));
+        typeData.add(new InitReq.TypeData("os_type", et_os_type.getText().toString()));
+        typeData.add(new InitReq.TypeData("os_version", et_os_version.getText().toString()));
+        typeData.add(new InitReq.TypeData("carrier", et_carrier.getText().toString()));
+        typeData.add(new InitReq.TypeData("screen_height", et_screen_height.getText().toString()));
+        typeData.add(new InitReq.TypeData("screen_width", et_screen_width.getText().toString()));
+        typeData.add(new InitReq.TypeData("network_type", et_network_type.getText().toString()));
+        typeData.add(new InitReq.TypeData("timezone_offset", et_timezone_offset.getText().toString()));
+        typeData.add(new InitReq.TypeData("first_open_time", et_first_open_time.getText().toString()));
+        typeData.add(new InitReq.TypeData("is_first_open", et_is_first_open.getText().toString()));
+        typeData.add(new InitReq.TypeData("country", et_country.getText().toString()));
+        typeData.add(new InitReq.TypeData("province", et_province.getText().toString()));
+        typeData.add(new InitReq.TypeData("city", et_city.getText().toString()));
+        typeData.add(new InitReq.TypeData("longitude", et_longitude.getText().toString()));
+        typeData.add(new InitReq.TypeData("latitude", et_latitude.getText().toString()));
+        return typeData;
     }
-
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void getPermissions() {
         //4、检测权限也需要判断多个，用&&符号
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CALL_PHONE) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setView();
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
         || shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)) {
@@ -110,10 +296,10 @@ public class MainActivity extends AppCompatActivity {
 //                    new String[] { Manifest.permission.REQUESTED_PERMISSION },
 //                    REQUEST_CODE);
 //            Toast.makeText(this,"您有未授权的权限，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
-            requestPermissionLauncher.launch(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.READ_PHONE_STATE});
+            requestPermissionLauncher.launch(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
 
         } else {
-            requestPermissionLauncher.launch(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.READ_PHONE_STATE});
+            requestPermissionLauncher.launch(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
         }
     }
 
@@ -122,26 +308,26 @@ public class MainActivity extends AppCompatActivity {
             // 3、isGranted的类型由boolean变成map，map的键值对是<String,Boolean>
             //String对应的是权限，Boolean对应的是是否授权，需要判断处理
             if (map.size() > 0){
-                if (!map.get(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                    Toast.makeText(this,"读取内存权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
+                if (map.get(Manifest.permission.READ_PHONE_STATE)) {
+                    et_imei.setText(IDUtils.getIMEI1(this));
+                    et_sn.setText(IDUtils.getDeviceSN(this));
                 } else {
-                    ((TextView)findViewById(R.id.tv_imei)).setText(IDUtils.getIMEI1(this));
-                }
-                if (!map.get(Manifest.permission.READ_PHONE_STATE)) {
                     Toast.makeText(this,"手机状态权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
+                }
+                if (map.get(Manifest.permission.ACCESS_COARSE_LOCATION) || map.get(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    Toast.makeText(this,"地理位置权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
+                } else {
+                    et_country.setText(LocationUtils.getInstance(this).getCountry());
+                    et_province.setText(LocationUtils.getInstance(this).getProvince());
+                    et_city.setText(LocationUtils.getInstance(this).getCity());
+                    et_longitude.setText(LocationUtils.getInstance(this).getLongitude());
+                    et_latitude.setText(LocationUtils.getInstance(this).getLatitude());
                 }
             } else {
                 Toast.makeText(this,"所有权限已授权",Toast.LENGTH_SHORT).show();
             }
         });
     }
-
-    private void call() {
-//        Intent intent = new Intent(Intent.ACTION_CALL);
-//        intent.setData(Uri.parse("tel:1234567890"));
-//        startActivity(intent);
-    }
-
 
 //    requestPermissions
 //    @Override
@@ -168,51 +354,5 @@ public class MainActivity extends AppCompatActivity {
 //        // permissions this app might request.
 //    }
 
-    public static String getDeviceAllInfo(Context context) {
 
-        return
-//                "\n\n1. IMEI:\n\t\t" + getIMEI(context)
-//                +
-                "\n\n2. 设备宽度:\n\t\t" + OtherUtils.getDeviceWidth((Activity) context)
-                        + "\n\n3. 设备高度:\n\t\t" + OtherUtils.getDeviceHeight((Activity) context)
-                        + "\n\n4. 是否有内置SD卡:\n\t\t" + MemoryUtils.isSDCardMount()
-                        + "\n\n5. RAM 信息:\n\t\t" + MemoryUtils.getRAMInfo(context)
-                        + "\n\n6. 内部存储信息\n\t\t" + MemoryUtils.getStorageInfo(context, 0)
-                        + "\n\n7. SD卡 信息:\n\t\t" + MemoryUtils.getStorageInfo(context, 1)
-//                + "\n\n8. 是否联网:\n\t\t" + Utils.isNetworkConnected(context)
-//                + "\n\n9. 网络类型:\n\t\t" + Utils.GetNetworkType(context)
-                        + "\n\n10. 系统默认语言:\n\t\t" + OtherUtils.getDeviceDefaultLanguage()
-
-                        + "\n\n11. ID:\n\t\t" + DevicesUtils.getDeviceId()
-                        + "\n\n12. DISPLAY:\n\t\t" + DevicesUtils.getDeviceDisplay()
-                        + "\n\n13. PRODUCT:\n\t\t" + DevicesUtils.getDeviceProduct()
-                        + "\n\n14. DEVICE:\n\t\t" + DevicesUtils.getDeviceDevice()
-                        + "\n\n15. BOARD:\n\t\t" + DevicesUtils.getDeviceBoard()
-                        + "\n\n16. SUPPORTED_ABIS:\n\t\t" + DevicesUtils.getDeviceAbis()
-                        + "\n\n17. MANUFACTURER:\n\t\t" + DevicesUtils.getDeviceManufacturer()
-                        + "\n\n18. BRAND:\n\t\t" + DevicesUtils.getDeviceBrand()
-                        + "\n\n19. MODEL:\n\t\t" + DevicesUtils.getDeviceModel()
-                        + "\n\n20. SOC_MANUFACTURER:\n\t\t" + DevicesUtils.getDeviceSocManufacturer()
-                        + "\n\n21. SOC_MODEL:\n\t\t" + DevicesUtils.getDeviceSocModel()
-                        + "\n\n22. BOOTLOADER:\n\t\t" + DevicesUtils.getDeviceBootloader()
-                        + "\n\n23. RADIO_VERSION:\n\t\t" + DevicesUtils.getDeviceRadioVersion()
-                        + "\n\n24. HARDWARE:\n\t\t" + DevicesUtils.getDeviceHardware()
-                        + "\n\n25. SKU:\n\t\t" + DevicesUtils.getDeviceSKU()
-                        + "\n\n26. ODM_SKU:\n\t\t" + DevicesUtils.getDeviceOdmSKU()
-                        + "\n\n27. TYPE:\n\t\t" + DevicesUtils.getDeviceType()
-                        + "\n\n28. TAGS:\n\t\t" + DevicesUtils.getDeviceTags()
-                        + "\n\n29. FINGERPRINT:\n\t\t" + DevicesUtils.getDeviceFubgerprint()
-                        + "\n\n30. TIME:\n\t\t" + DevicesUtils.getDeviceTime()
-                        + "\n\n31. USER:\n\t\t" + DevicesUtils.getDeviceUser()
-                        + "\n\n32. HOST:\n\t\t" + DevicesUtils.getDeviceHost()
-                        + "\n\n33. INCREMENTAL:\n\t\t" + DevicesUtils.getDeviceIncremental()
-                        + "\n\n34. RELEASE:\n\t\t" + DevicesUtils.getDeviceRelease()
-                        + "\n\n35. RELEASE_OR_CODENAME:\n\t\t" + DevicesUtils.getDeviceReleaseOrCodename()
-                        + "\n\n36. BASE_OS:\n\t\t" + DevicesUtils.getDeviceBaseOS()
-                        + "\n\n37. SECURITY_PATCH:\n\t\t" + DevicesUtils.getDeviceSecurityPatch()
-                        + "\n\n38. MEDIA_PERFORMANCE_CLASS:\n\t\t" + DevicesUtils.getDeviceMediaPerformanceClass()
-                        + "\n\n39. SDK_INT:\n\t\t" + DevicesUtils.getDeviceSdkInt()
-                        + "\n\n40. PREVIEW_SDK_INT:\n\t\t" + DevicesUtils.getDevicePreviewSdkInt();
-
-    }
 }

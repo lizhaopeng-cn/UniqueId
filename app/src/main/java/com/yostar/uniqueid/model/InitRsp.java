@@ -2,7 +2,7 @@ package com.yostar.uniqueid.model;
 
 public class InitRsp {
     private String device_id;
-    private String attr_id;
+    private String udid;
 
     public String getDevice_id() {
         return device_id;
@@ -12,11 +12,11 @@ public class InitRsp {
         this.device_id = device_id;
     }
 
-    public String getAttr_id() {
-        return attr_id;
+    public String getUD_id() {
+        return udid;
     }
 
-    public void setAttr_id(String attr_id) {
-        this.attr_id = attr_id;
+    public void setUD_id(String udid) {
+        this.udid = udid;
     }
 }
