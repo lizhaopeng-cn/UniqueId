@@ -86,6 +86,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bindView();
         setOnClick();
         setView();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            getPermissions();
+        }
     }
 
     private void setFirstOpen() {
@@ -163,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.btn_init:
-                baseService.netInit(getInitList());
+                baseService.netInit(getInitList(), MainActivity.this);
                 break;
             case R.id.btn_restore:
                 setView();
@@ -181,7 +184,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String accoundId = et_account_id.getText().toString();
                 Pattern pattern = Pattern.compile("\\d{6}");
                 if (pattern.matcher(accoundId).matches()) {
-                    baseService.netLogin(accoundId);
+                    baseService.netLogin(accoundId, MainActivity.this);
                 } else {
                     Toast.makeText(this, "account_id需为6位数字", Toast.LENGTH_SHORT).show();
                 }
@@ -280,8 +283,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setView();
-        } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
-        || shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)) {
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)
+                || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
+                || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
 //            AlertDialog.Builder builder = new AlertDialog.Builder(this);
 //            builder.setMessage("备份通讯录需要访问 “通讯录” 和 “外部存储器”，请到 “应用信息 -> 权限” 中授予！");
 //            builder.setPositiveButton("去手动授权", new DialogInterface.OnClickListener() {
@@ -315,13 +319,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Toast.makeText(this,"手机状态权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
                 }
                 if (map.get(Manifest.permission.ACCESS_COARSE_LOCATION) || map.get(Manifest.permission.ACCESS_FINE_LOCATION)) {
-                    Toast.makeText(this,"地理位置权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
-                } else {
                     et_country.setText(LocationUtils.getInstance(this).getCountry());
                     et_province.setText(LocationUtils.getInstance(this).getProvince());
                     et_city.setText(LocationUtils.getInstance(this).getCity());
                     et_longitude.setText(LocationUtils.getInstance(this).getLongitude());
                     et_latitude.setText(LocationUtils.getInstance(this).getLatitude());
+                } else {
+                    Toast.makeText(this,"地理位置权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
                 }
             } else {
                 Toast.makeText(this,"所有权限已授权",Toast.LENGTH_SHORT).show();

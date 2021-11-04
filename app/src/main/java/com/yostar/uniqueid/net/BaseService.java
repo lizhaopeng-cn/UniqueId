@@ -1,5 +1,8 @@
 package com.yostar.uniqueid.net;
 
+import android.content.Context;
+import android.widget.Toast;
+
 import com.yostar.uniqueid.model.BaseRsp;
 import com.yostar.uniqueid.model.InitReq;
 import com.yostar.uniqueid.model.InitRsp;
@@ -60,7 +63,7 @@ public class BaseService {
   }
 
   //用户公告
-  public void netInit(List<InitReq.TypeData> typeData) {
+  public void netInit(List<InitReq.TypeData> typeData, Context context) {
     InitReq initReq = new InitReq();
     initReq.setType_data(typeData);
 
@@ -70,24 +73,28 @@ public class BaseService {
       @Override
       public void onResponse(Call<BaseRsp<InitRsp>> call, Response<BaseRsp<InitRsp>> response) {
         if (response.code() == 200) {
+          Toast.makeText(context, "初始化成功", Toast.LENGTH_SHORT).show();
           String deviceID = response.body().data.getDevice_id();
           String UDID = response.body().data.getUD_id();
           SPUtils.getInstance().put(SDKConst.SP_DEVICE_ID, deviceID);
           SPUtils.getInstance().put(SDKConst.SP_UD_ID, UDID);
           LogUtil.i(deviceID);
           LogUtil.i(UDID);
+        } else {
+          Toast.makeText(context, response.toString(), Toast.LENGTH_SHORT).show();
         }
       }
 
       @Override
       public void onFailure(Call<BaseRsp<InitRsp>> call, Throwable t) {
+        Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
         LogUtil.i(t.getMessage());
       }
     });
   }
 
   //用户公告
-  public void netLogin(String accountID) {
+  public void netLogin(String accountID, Context context) {
     LoginReq loginReq = new LoginReq();
     loginReq.setAccount_id(accountID);
 
@@ -96,11 +103,17 @@ public class BaseService {
     call.enqueue(new Callback<BaseRsp<LoginRsp>>() {
       @Override
       public void onResponse(Call<BaseRsp<LoginRsp>> call, Response<BaseRsp<LoginRsp>> response) {
+        if (response.code() == 200) {
+          Toast.makeText(context, "登录成功", Toast.LENGTH_SHORT).show();
+        } else {
+          Toast.makeText(context, response.toString(), Toast.LENGTH_SHORT).show();
+        }
         LogUtil.i(response.code());
       }
 
       @Override
       public void onFailure(Call<BaseRsp<LoginRsp>> call, Throwable t) {
+        Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
         LogUtil.i(t.getMessage());
       }
     });
