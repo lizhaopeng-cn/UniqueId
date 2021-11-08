@@ -1,9 +1,12 @@
 package com.yostar.uniqueid;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +24,7 @@ import com.yostar.uniqueid.Interface.CallbackValue;
 import com.yostar.uniqueid.model.InitReq;
 import com.yostar.uniqueid.net.BaseService;
 import com.yostar.uniqueid.util.DevicesUtils;
+import com.yostar.uniqueid.util.FileUtils;
 import com.yostar.uniqueid.util.IDUtils;
 import com.yostar.uniqueid.util.LocationUtils;
 import com.yostar.uniqueid.util.NetUtils;
@@ -31,11 +35,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private EditText et_uuid;
     private EditText et_imei;
     private EditText et_android_id;
     private EditText et_mac;
@@ -76,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button btn_login;
 
     private ActivityResultLauncher<String[]> requestPermissionLauncher;
+    private ActivityResultLauncher<Intent> fileLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void bindView() {
+        et_uuid = findViewById(R.id.et_uuid);
         et_imei = findViewById(R.id.et_imei);
         et_android_id = findViewById(R.id.et_android_id);
         et_mac = findViewById(R.id.et_mac);
@@ -170,9 +178,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.btn_restore:
                 setView();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    getPermissions();
+                }
                 break;
             case R.id.btn_get_id:
-                tv_device_id.setText(SPUtils.getInstance().getString(SDKConst.SP_DEVICE_ID));
+                tv_device_id.setText(getDeviceId());
                 tv_udid.setText(SPUtils.getInstance().getString(SDKConst.SP_UD_ID));
                 break;
             case R.id.btn_account_id:
@@ -193,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setView() {
+        et_uuid.setText(getRandomUUID());
         et_imei.setText(IDUtils.getImeiOnly(this, 0));
         et_android_id.setText(IDUtils.getAndroidId(this));
         et_mac.setText(IDUtils.getMacAddress(this));
@@ -219,6 +231,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et_city.setText(LocationUtils.getInstance(this).getCity());
         et_longitude.setText(LocationUtils.getInstance(this).getLongitude());
         et_latitude.setText(LocationUtils.getInstance(this).getLatitude());
+
+        tv_device_id.setText(getDeviceId());
+        tv_udid.setText(SPUtils.getInstance().getString(SDKConst.SP_UD_ID));
 
         NetUtils.getOutNetIP(new CallbackValue() {
             @Override
@@ -247,6 +262,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private List<InitReq.TypeData> getInitList() {
         List<InitReq.TypeData> typeData = new ArrayList<>();
+        if (SPUtils.getInstance().getInt(SDKConst.SP_IS_FIRST_OPEN, -1) == 1 && !TextUtils.isEmpty(tv_device_id.getText().toString())) {
+            typeData.add(new InitReq.TypeData("device_id", tv_device_id.getText().toString()));
+        }
+        typeData.add(new InitReq.TypeData("uuid", et_uuid.getText().toString()));
         typeData.add(new InitReq.TypeData("imei", et_imei.getText().toString()));
         typeData.add(new InitReq.TypeData("android_id", et_android_id.getText().toString()));
         typeData.add(new InitReq.TypeData("mac", et_mac.getText().toString()));
@@ -278,39 +297,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void getPermissions() {
-        //4、检测权限也需要判断多个，用&&符号
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            //检查是否已经有权限
+            if (!Environment.isExternalStorageManager()) {
+                fileLauncher.launch(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
+            }
+        }
+
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setView();
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)
+                || shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
+                || shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
                 || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-//            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//            builder.setMessage("备份通讯录需要访问 “通讯录” 和 “外部存储器”，请到 “应用信息 -> 权限” 中授予！");
-//            builder.setPositiveButton("去手动授权", new DialogInterface.OnClickListener() {
-//                @Override
-//                public void onClick(DialogInterface dialog, int which) {
-//                }
-//            });
-//            builder.setNegativeButton("取消", null);
-//            builder.show();
-
-//            requestPermissions(,
-//                    new String[] { Manifest.permission.REQUESTED_PERMISSION },
-//                    REQUEST_CODE);
-//            Toast.makeText(this,"您有未授权的权限，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
-            requestPermissionLauncher.launch(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
+            requestPermissionLauncher.launch(new String[]{
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION});
 
         } else {
-            requestPermissionLauncher.launch(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION});
+            requestPermissionLauncher.launch(new String[]{
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION});
         }
     }
 
     private void selectedPermission() {
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), map -> {
-            // 3、isGranted的类型由boolean变成map，map的键值对是<String,Boolean>
-            //String对应的是权限，Boolean对应的是是否授权，需要判断处理
             if (map.size() > 0){
                 if (map.get(Manifest.permission.READ_PHONE_STATE)) {
                     et_imei.setText(IDUtils.getIMEI1(this));
@@ -327,36 +350,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     Toast.makeText(this,"地理位置权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
                 }
+                if (map.get(Manifest.permission.READ_EXTERNAL_STORAGE) || map.get(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    et_uuid.setText(getRandomUUID());
+                    tv_device_id.setText(getDeviceId());
+                } else {
+                    Toast.makeText(this,"存储文件权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
+                }
             } else {
                 Toast.makeText(this,"所有权限已授权",Toast.LENGTH_SHORT).show();
             }
         });
+
+        fileLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                if (Environment.isExternalStorageManager()) {
+                    et_uuid.setText(getRandomUUID());
+                }
+            }
+        });
     }
 
-//    requestPermissions
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, String[] permissions,
-//                                           int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        switch (requestCode) {
-//            case PERMISSION_REQUEST_CODE:
-//                // If request is cancelled, the result arrays are empty.
-//                if (grantResults.length > 0 &&
-//                        grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-//                    // Permission is granted. Continue the action or workflow
-//                    // in your app.
-//                } else {
-//                    // Explain to the user that the feature is unavailable because
-//                    // the features requires a permission that the user has denied.
-//                    // At the same time, respect the user's decision. Don't link to
-//                    // system settings in an effort to convince the user to change
-//                    // their decision.
-//                }
-//                return;
-//        }
-//        // Other 'case' lines to check for other
-//        // permissions this app might request.
-//    }
+    private String getDeviceId() {
+        String deviceId = SPUtils.getInstance().getString(SDKConst.SP_DEVICE_ID);
+        if (TextUtils.isEmpty(deviceId)) {
+            deviceId = FileUtils.readData(FileUtils.FILE_NAME_DEVICE_ID);
+        }
+        return deviceId;
+    }
 
+    private String getRandomUUID() {
+        String uuid = FileUtils.readData(FileUtils.FILE_NAME_UUID);
+        if (TextUtils.isEmpty(uuid)) {
+            FileUtils.writeData(FileUtils.FILE_NAME_UUID, UUID.randomUUID().toString());
+            return FileUtils.readData(FileUtils.FILE_NAME_UUID);
+        } else {
+            return uuid;
+        }
+    }
 
 }

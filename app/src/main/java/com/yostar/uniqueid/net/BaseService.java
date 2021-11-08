@@ -3,18 +3,18 @@ package com.yostar.uniqueid.net;
 import android.content.Context;
 import android.widget.Toast;
 
+import com.yostar.uniqueid.SDKConst;
 import com.yostar.uniqueid.model.BaseRsp;
 import com.yostar.uniqueid.model.InitReq;
 import com.yostar.uniqueid.model.InitRsp;
 import com.yostar.uniqueid.model.LoginReq;
 import com.yostar.uniqueid.model.LoginRsp;
+import com.yostar.uniqueid.util.FileUtils;
 import com.yostar.uniqueid.util.GsonUtils;
 import com.yostar.uniqueid.util.LogUtil;
 import com.yostar.uniqueid.util.MessageDigestUtils;
-import com.yostar.uniqueid.SDKConst;
 import com.yostar.uniqueid.util.SPUtils;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -78,6 +78,7 @@ public class BaseService {
           String UDID = response.body().data.getUD_id();
           SPUtils.getInstance().put(SDKConst.SP_DEVICE_ID, deviceID);
           SPUtils.getInstance().put(SDKConst.SP_UD_ID, UDID);
+          FileUtils.writeData(FileUtils.FILE_NAME_DEVICE_ID, deviceID);
           LogUtil.i(deviceID);
           LogUtil.i(UDID);
         } else {
