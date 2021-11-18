@@ -23,7 +23,7 @@ public class LoggingInterceptor implements Interceptor {
     LogUtil.i("************** Start ******************");
     LogUtil.i("Request: " + request.url());
     LogUtil.i("Authorization：" + request.header("Authorization"));
-    if ("POST".equals(request.method())) {
+//    if ("POST".equals(request.method())) {
       StringBuilder sb = new StringBuilder();
       if (request.body() instanceof FormBody) {
         FormBody body = (FormBody) request.body();
@@ -43,7 +43,7 @@ public class LoggingInterceptor implements Interceptor {
           e.printStackTrace();
         }
       }
-    }
+//    }
 
     long startTime = System.currentTimeMillis();
     Response response = chain.proceed(request);

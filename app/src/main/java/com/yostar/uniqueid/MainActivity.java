@@ -271,6 +271,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         typeData.add(new InitReq.TypeData("mac", et_mac.getText().toString()));
         typeData.add(new InitReq.TypeData("sn", et_sn.getText().toString()));
         typeData.add(new InitReq.TypeData("ua", et_ua.getText().toString()));
+        typeData.add(new InitReq.TypeData("gaid", et_gaid.getText().toString()));
         typeData.add(new InitReq.TypeData("ip_in", et_ip_in.getText().toString()));
         typeData.add(new InitReq.TypeData("ip_out", et_ip_out.getText().toString()));
         typeData.add(new InitReq.TypeData("ua", et_ua.getText().toString()));
