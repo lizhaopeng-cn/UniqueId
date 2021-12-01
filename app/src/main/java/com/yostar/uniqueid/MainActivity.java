@@ -27,6 +27,7 @@ import com.yostar.uniqueid.util.DevicesUtils;
 import com.yostar.uniqueid.util.FileUtils;
 import com.yostar.uniqueid.util.IDUtils;
 import com.yostar.uniqueid.util.LocationUtils;
+import com.yostar.uniqueid.util.LogUtil;
 import com.yostar.uniqueid.util.NetUtils;
 import com.yostar.uniqueid.util.OtherUtils;
 import com.yostar.uniqueid.util.SPUtils;
@@ -99,14 +100,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void setFirstOpen() {
-        // 是否第一个打开 0否1是
+        // 是否第一次打开 0否1是
         int isFirstOpen = SPUtils.getInstance().getInt(SDKConst.SP_IS_FIRST_OPEN, -1);
         if (isFirstOpen == -1) {
             SPUtils.getInstance().put(SDKConst.SP_IS_FIRST_OPEN, 1);
         } else if (isFirstOpen == 1) {
             SPUtils.getInstance().put(SDKConst.SP_IS_FIRST_OPEN, 0);
         }
-        // 第一个打开时间
+        // 第一次打开时间
         long timeFirstOpen = SPUtils.getInstance().getLong(SDKConst.SP_TIME_FIRST_OPEN, 0);
         if (timeFirstOpen == 0) {
             SPUtils.getInstance().put(SDKConst.SP_TIME_FIRST_OPEN, new Date().getTime());
@@ -211,7 +212,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et_sn.setText(IDUtils.getDeviceSN(this));
         et_ua.setText(NetUtils.getUserAgent(this));
         et_ip_in.setText(NetUtils.getIpAddress(this));
-        et_ip_out.setText(NetUtils.getIpAddress(this));
 
         et_language.setText(OtherUtils.getDeviceDefaultLanguage());
         et_manufacturer.setText(DevicesUtils.getDeviceManufacturer());
@@ -298,10 +298,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     public void getPermissions() {
+        // R以上只同意ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION就够了，读写权限请不请求都行
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             //检查是否已经有权限
             if (!Environment.isExternalStorageManager()) {
+                LogUtil.i("ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION getPermissions false");
                 fileLauncher.launch(new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION));
+            } else {
+                LogUtil.i("ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION getPermissions true");
             }
         }
 
@@ -310,20 +314,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            LogUtil.i("All Permissions getPermissions true");
             setView();
-        } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)
-                || shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
-                || shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)
-                || shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
-            requestPermissionLauncher.launch(new String[]{
-                    Manifest.permission.READ_PHONE_STATE,
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION});
-
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_PHONE_STATE)) {
+            LogUtil.i("READ_PHONE_STATE getPermissions false");
+            requestPermissionLauncher.launch(new String[]{Manifest.permission.READ_PHONE_STATE});
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            LogUtil.i("READ_EXTERNAL_STORAGE getPermissions false");
+            requestPermissionLauncher.launch(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE});
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            LogUtil.i("WRITE_EXTERNAL_STORAGE getPermissions false");
+            requestPermissionLauncher.launch(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE});
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+            LogUtil.i("ACCESS_COARSE_LOCATION getPermissions false");
+            requestPermissionLauncher.launch(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION});
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            LogUtil.i("ACCESS_FINE_LOCATION getPermissions false");
+            requestPermissionLauncher.launch(new String[]{Manifest.permission.ACCESS_FINE_LOCATION});
         } else {
+            LogUtil.i("some getPermissions false");
             requestPermissionLauncher.launch(new String[]{
                     Manifest.permission.READ_PHONE_STATE,
                     Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -337,27 +346,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), map -> {
             if (map.size() > 0){
                 if (map.get(Manifest.permission.READ_PHONE_STATE)) {
+                    LogUtil.i("READ_PHONE_STATE selectedPermission true");
                     et_imei.setText(IDUtils.getIMEI1(this));
                     et_sn.setText(IDUtils.getDeviceSN(this));
                 } else {
+                    LogUtil.i("READ_PHONE_STATE selectedPermission false");
                     Toast.makeText(this,"手机状态权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
                 }
                 if (map.get(Manifest.permission.ACCESS_COARSE_LOCATION) || map.get(Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    LogUtil.i("ACCESS_COARSE_LOCATION ACCESS_FINE_LOCATION selectedPermission true");
                     et_country.setText(LocationUtils.getInstance(this).getCountry());
                     et_province.setText(LocationUtils.getInstance(this).getProvince());
                     et_city.setText(LocationUtils.getInstance(this).getCity());
                     et_longitude.setText(LocationUtils.getInstance(this).getLongitude());
                     et_latitude.setText(LocationUtils.getInstance(this).getLatitude());
                 } else {
+                    LogUtil.i("ACCESS_COARSE_LOCATION ACCESS_FINE_LOCATION selectedPermission false");
                     Toast.makeText(this,"地理位置权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
                 }
                 if (map.get(Manifest.permission.READ_EXTERNAL_STORAGE) || map.get(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    LogUtil.i("READ_EXTERNAL_STORAGE WRITE_EXTERNAL_STORAGE selectedPermission true");
                     et_uuid.setText(getRandomUUID());
                     tv_device_id.setText(getDeviceId());
                 } else {
+                    LogUtil.i("READ_EXTERNAL_STORAGE WRITE_EXTERNAL_STORAGE selectedPermission false");
                     Toast.makeText(this,"存储文件权限未授权，请自行前往设置同意授权",Toast.LENGTH_SHORT).show();
                 }
             } else {
+                LogUtil.i("All selectedPermission true");
                 Toast.makeText(this,"所有权限已授权",Toast.LENGTH_SHORT).show();
             }
         });
@@ -365,7 +381,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fileLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 if (Environment.isExternalStorageManager()) {
+                    LogUtil.i("ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION selectedPermission true");
                     et_uuid.setText(getRandomUUID());
+                } else {
+                    LogUtil.i("ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION selectedPermission false");
                 }
             }
         });
@@ -374,7 +393,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String getDeviceId() {
         String deviceId = SPUtils.getInstance().getString(SDKConst.SP_DEVICE_ID);
         if (TextUtils.isEmpty(deviceId)) {
+            LogUtil.i("getDeviceId deviceid null");
             deviceId = FileUtils.readData(FileUtils.FILE_NAME_DEVICE_ID);
+        } else {
+            LogUtil.i("getDeviceId deviceid" + deviceId);
         }
         return deviceId;
     }
@@ -382,9 +404,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private String getRandomUUID() {
         String uuid = FileUtils.readData(FileUtils.FILE_NAME_UUID);
         if (TextUtils.isEmpty(uuid)) {
+            LogUtil.i("getRandomUUID uuid null");
             FileUtils.writeData(FileUtils.FILE_NAME_UUID, UUID.randomUUID().toString());
             return FileUtils.readData(FileUtils.FILE_NAME_UUID);
         } else {
+            LogUtil.i("getRandomUUID uuid " + uuid);
             return uuid;
         }
     }

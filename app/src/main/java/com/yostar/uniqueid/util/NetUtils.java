@@ -27,6 +27,7 @@ import java.util.Enumeration;
 public class NetUtils {
     //--ip
     public static String getIpAddress(Context context){
+        String localIP = "";
         NetworkInfo info = ((ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         if (info != null && info.isConnected()) {
             // 3/4g网络
@@ -37,7 +38,9 @@ public class NetUtils {
                         for (Enumeration<InetAddress> enumIpAddr = intf.getInetAddresses(); enumIpAddr.hasMoreElements(); ) {
                             InetAddress inetAddress = enumIpAddr.nextElement();
                             if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
-                                return inetAddress.getHostAddress();
+                                localIP = inetAddress.getHostAddress();
+                                LogUtil.i("getLocalIp 3/4g网络 " + localIP);
+                                return localIP;
                             }
                         }
                     }
@@ -49,11 +52,14 @@ public class NetUtils {
                 //  wifi网络
                 WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
                 WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                String ipAddress = intIP2StringIP(wifiInfo.getIpAddress());
-                return ipAddress;
+                localIP = intIP2StringIP(wifiInfo.getIpAddress());
+                LogUtil.i("getLocalIp wifi网络 " + localIP);
+                return localIP;
             }  else if (info.getType() == ConnectivityManager.TYPE_ETHERNET){
                 // 有限网络
-                return getLocalIp();
+                localIP = getLocalIp();
+                LogUtil.i("getLocalIp 有限网络 " + localIP);
+                return localIP;
             }
         }
         return null;
@@ -116,6 +122,7 @@ public class NetUtils {
                         JSONObject jsonObject = new JSONObject(strber.toString());
                         //从反馈的结果中提取出IP地址
                         String ip = jsonObject.getString("ip");
+                        LogUtil.i("getOutNetIP " + ip);
                         callbackValue.onCallback(ip);
                     }
                 } catch (Exception e) {

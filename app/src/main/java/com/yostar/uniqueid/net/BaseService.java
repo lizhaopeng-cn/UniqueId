@@ -28,7 +28,8 @@ import retrofit2.Retrofit;
 
 public class BaseService {
 
-  private static final String BASE_URL = "https://test-ad-api.yostar.net";
+//  private static final String BASE_URL = "https://test-ad-api.yostar.net";
+  private static final String BASE_URL = "https://test-udata-api.open.yostar.net";
   private static final String SIGN_TAG = "4aeb195cd69ed93520b9b4129636264e0cdc0153";
 
   protected Retrofit retrofit2;
@@ -59,6 +60,7 @@ public class BaseService {
     mapAuth.put("Head", mapHead);
     mapAuth.put("Sign", jsonSign);
     String authStr = GsonUtils.gsonToString(mapAuth);
+    LogUtil.i("getHeaderAuth " + authStr);
     return authStr;
   }
 
@@ -79,9 +81,11 @@ public class BaseService {
           SPUtils.getInstance().put(SDKConst.SP_DEVICE_ID, deviceID);
           SPUtils.getInstance().put(SDKConst.SP_UD_ID, UDID);
           FileUtils.writeData(FileUtils.FILE_NAME_DEVICE_ID, deviceID);
-          LogUtil.i(deviceID);
-          LogUtil.i(UDID);
+          LogUtil.i("netInit 200");
+          LogUtil.i("netInit " + deviceID);
+          LogUtil.i("netInit " + UDID);
         } else {
+          LogUtil.i("netInit " + response.toString());
           Toast.makeText(context, response.toString(), Toast.LENGTH_SHORT).show();
         }
       }
@@ -89,7 +93,7 @@ public class BaseService {
       @Override
       public void onFailure(Call<BaseRsp<InitRsp>> call, Throwable t) {
         Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
-        LogUtil.i(t.getMessage());
+        LogUtil.i("netInit " + t.getMessage());
       }
     });
   }
@@ -105,17 +109,18 @@ public class BaseService {
       @Override
       public void onResponse(Call<BaseRsp<LoginRsp>> call, Response<BaseRsp<LoginRsp>> response) {
         if (response.code() == 200) {
+          LogUtil.i("netLogin 200");
           Toast.makeText(context, "登录成功", Toast.LENGTH_SHORT).show();
         } else {
+          LogUtil.i("netLogin " + response.toString());
           Toast.makeText(context, response.toString(), Toast.LENGTH_SHORT).show();
         }
-        LogUtil.i(response.code());
       }
 
       @Override
       public void onFailure(Call<BaseRsp<LoginRsp>> call, Throwable t) {
         Toast.makeText(context, t.getMessage(), Toast.LENGTH_SHORT).show();
-        LogUtil.i(t.getMessage());
+        LogUtil.i("netLogin" + t.getMessage());
       }
     });
   }

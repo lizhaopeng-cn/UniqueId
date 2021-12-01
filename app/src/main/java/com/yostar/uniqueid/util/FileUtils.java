@@ -27,8 +27,9 @@ public class FileUtils {
             fileOutputStream.write(strContent.getBytes());
             fileOutputStream.flush();
             fileOutputStream.close();
+            LogUtil.d("writeData:" + fileName + strContent);
         } catch (Exception e) {
-            Log.e("TestFile", "Error on write File:" + e);
+            LogUtil.e("writeData:" + fileName + "Error on write File:" + e);
         }
     }
 
@@ -51,11 +52,12 @@ public class FileUtils {
                             content += line + "\n";
                         }
                         instream.close();//关闭输入流
+                        LogUtil.d("readData:" + fileName + content);
                     }
                 } catch (java.io.FileNotFoundException e) {
-                    Log.d("TestFile", "The File doesn't not exist.");
-                } catch (IOException e) {
-                    Log.d("TestFile", e.getMessage());
+                    LogUtil.d("readData:" + fileName + "The File doesn't not exist.");
+                } catch (Exception e) {
+                    LogUtil.d("readData:" + fileName + e.getMessage());
                 }
             }
         }

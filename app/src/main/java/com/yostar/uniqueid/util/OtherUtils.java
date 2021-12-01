@@ -89,6 +89,7 @@ public class OtherUtils {
         } else {
             opeType = "";
         }
+        LogUtil.i("getNetworkOperatorName " + opeType);
         return opeType;
     }
 
@@ -146,11 +147,13 @@ public class OtherUtils {
     public static String getNetworkState(Context context) {
         ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE); // 获取网络服务
         if (null == connManager) { // 为空则认为无网络
+            LogUtil.i("getNetworkState null 1");
             return null;
         }
         // 获取网络类型，如果为空，返回无网络
         NetworkInfo activeNetInfo = connManager.getActiveNetworkInfo();
         if (activeNetInfo == null || !activeNetInfo.isAvailable()) {
+            LogUtil.i("getNetworkState null 2");
             return null;
         }
         // 判断是否为WIFI
@@ -159,6 +162,7 @@ public class OtherUtils {
             NetworkInfo.State state = wifiInfo.getState();
             if (null != state) {
                 if (state == NetworkInfo.State.CONNECTED || state == NetworkInfo.State.CONNECTING) {
+                    LogUtil.i("getNetworkState wifi");
                     return "wifi";
                 }
             }
@@ -166,6 +170,7 @@ public class OtherUtils {
         // 若不是WIFI，则去判断是2G、3G、4G网
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+            LogUtil.i("getNetworkState null 3");
             return null;
         }
         int networkType = telephonyManager.getNetworkType();
@@ -193,6 +198,7 @@ public class OtherUtils {
             case TelephonyManager.NETWORK_TYPE_EDGE:
             case TelephonyManager.NETWORK_TYPE_1xRTT:
             case TelephonyManager.NETWORK_TYPE_IDEN:
+                LogUtil.i("getNetworkState 2G");
                 return "2G";
             // 3G网络
             case TelephonyManager.NETWORK_TYPE_EVDO_A:
@@ -204,11 +210,17 @@ public class OtherUtils {
             case TelephonyManager.NETWORK_TYPE_EVDO_B:
             case TelephonyManager.NETWORK_TYPE_EHRPD:
             case TelephonyManager.NETWORK_TYPE_HSPAP:
+                LogUtil.i("getNetworkState 3G");
                 return "3G";
             // 4G网络
             case TelephonyManager.NETWORK_TYPE_LTE:
+                LogUtil.i("getNetworkState 4G");
                 return "4G";
+            case TelephonyManager.NETWORK_TYPE_NR:
+                LogUtil.i("getNetworkState 5G");
+                return "5G";
             default:
+                LogUtil.i("getNetworkState unknown");
                 return "unknown";
         }
     }
