@@ -1,7 +1,6 @@
 package com.yostar.uniqueid;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -21,18 +20,19 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.yostar.uniqueid.Interface.CallbackValue;
-import com.yostar.uniqueid.model.InitReq;
-import com.yostar.uniqueid.net.BaseService;
-import com.yostar.uniqueid.util.DemoHelper;
-import com.yostar.uniqueid.util.DevicesUtils;
-import com.yostar.uniqueid.util.FileUtils;
-import com.yostar.uniqueid.util.IDUtils;
-import com.yostar.uniqueid.util.LocationUtils;
-import com.yostar.uniqueid.util.LogUtil;
-import com.yostar.uniqueid.util.NetUtils;
-import com.yostar.uniqueid.util.OtherUtils;
-import com.yostar.uniqueid.util.SPUtils;
+import com.yostar.udata.Interface.CallbackValue;
+import com.yostar.udata.config.SDKConst;
+import com.yostar.udata.model.InitReq;
+import com.yostar.udata.net.BaseService;
+import com.yostar.udata.util.DemoHelper;
+import com.yostar.udata.util.DevicesUtils;
+import com.yostar.udata.util.FileUtils;
+import com.yostar.udata.util.IDUtils;
+import com.yostar.udata.util.LocationUtils;
+import com.yostar.udata.util.LogUtil;
+import com.yostar.udata.util.NetUtils;
+import com.yostar.udata.util.OtherUtils;
+import com.yostar.udata.util.SPUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,7 +42,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, DemoHelper.AppIdsUpdater {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private EditText et_uuid;
     private EditText et_imei;
@@ -100,8 +100,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getPermissions();
         }
-        DemoHelper demoHelper = new DemoHelper(this);
-        demoHelper.getDeviceIds(this);
     }
 
     private void setFirstOpen() {
@@ -264,6 +262,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
             }
         });
+
+        // oaid
+        DemoHelper.AppIdsUpdater appIdsUpdater = new DemoHelper.AppIdsUpdater() {
+            @Override
+            public void onIdsValid(String ids) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        et_oaid.setText(ids);
+                    }
+                });
+            }
+        };
+        DemoHelper demoHelper = new DemoHelper(appIdsUpdater);
+        demoHelper.getDeviceIds(this);
     }
 
     private List<InitReq.TypeData> getInitList() {
@@ -418,15 +431,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             LogUtil.i("getRandomUUID uuid " + uuid);
             return uuid;
         }
-    }
-
-    @Override
-    public void onIdsValid(String ids) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                et_oaid.setText(ids);
-            }
-        });
     }
 }

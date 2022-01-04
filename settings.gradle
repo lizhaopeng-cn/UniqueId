@@ -8,3 +8,4 @@ dependencyResolutionManagement {
 }
 rootProject.name = "UniqueId"
 include ':app'
+include ':udata'

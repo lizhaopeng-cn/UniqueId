@@ -1,0 +1,64 @@
+package com.yostar.udata.util;
+
+import android.os.Environment;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+public class FileUtils {
+    public static final String FILE_PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/com.yostar/uniqueid/";
+    public static final String FILE_NAME_UUID = "uuid.txt";
+    public static final String FILE_NAME_DEVICE_ID = "device_id.txt";
+
+    public static void writeData(String fileName, String strContent) {
+        try {
+            File file = new File(FILE_PATH + fileName);
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(strContent.getBytes());
+            fileOutputStream.flush();
+            fileOutputStream.close();
+            LogUtil.d("writeData:" + fileName + strContent);
+        } catch (Exception e) {
+            LogUtil.e("writeData:" + fileName + "Error on write File:" + e);
+        }
+    }
+
+
+    //读取指定目录下的所有TXT文件的文件内容
+    public static String readData(String fileName) {
+        File file = new File(FILE_PATH + fileName);
+        String content = "";
+        if (!file.isDirectory()) {  //检查此路径名的文件是否是一个目录(文件夹)
+            if (file.getName().endsWith("txt")) {//文件格式为""文件
+                try {
+                    InputStream instream = new FileInputStream(file);
+                    if (instream != null) {
+                        InputStreamReader inputreader
+                                = new InputStreamReader(instream, "UTF-8");
+                        BufferedReader buffreader = new BufferedReader(inputreader);
+                        String line = "";
+                        //分行读取
+                        while ((line = buffreader.readLine()) != null) {
+                            content += line + "\n";
+                        }
+                        instream.close();//关闭输入流
+                        LogUtil.d("readData:" + fileName + content);
+                    }
+                } catch (java.io.FileNotFoundException e) {
+                    LogUtil.d("readData:" + fileName + "The File doesn't not exist.");
+                } catch (Exception e) {
+                    LogUtil.d("readData:" + fileName + e.getMessage());
+                }
+            }
+        }
+        return content;
+    }
+}
