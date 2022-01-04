@@ -10,6 +10,7 @@ public class UniqueIDApplication extends Application {
     public void onCreate() {
         super.onCreate();
         mContext = getApplicationContext();
+        System.loadLibrary("msaoaidsec");
     }
 
     public static Context getInstance() {

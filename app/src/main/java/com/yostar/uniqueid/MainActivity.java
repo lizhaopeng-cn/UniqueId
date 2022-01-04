@@ -1,6 +1,7 @@
 package com.yostar.uniqueid;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -23,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import com.yostar.uniqueid.Interface.CallbackValue;
 import com.yostar.uniqueid.model.InitReq;
 import com.yostar.uniqueid.net.BaseService;
+import com.yostar.uniqueid.util.DemoHelper;
 import com.yostar.uniqueid.util.DevicesUtils;
 import com.yostar.uniqueid.util.FileUtils;
 import com.yostar.uniqueid.util.IDUtils;
@@ -40,13 +42,14 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, DemoHelper.AppIdsUpdater {
 
     private EditText et_uuid;
     private EditText et_imei;
     private EditText et_android_id;
     private EditText et_mac;
     private EditText et_gaid;
+    private EditText et_oaid;
     private EditText et_sn;
     private EditText et_ua;
     private EditText et_ip_in;
@@ -97,6 +100,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             getPermissions();
         }
+        DemoHelper demoHelper = new DemoHelper(this);
+        demoHelper.getDeviceIds(this);
     }
 
     private void setFirstOpen() {
@@ -120,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         et_android_id = findViewById(R.id.et_android_id);
         et_mac = findViewById(R.id.et_mac);
         et_gaid = findViewById(R.id.et_gaid);
+        et_oaid = findViewById(R.id.et_oaid);
         et_sn = findViewById(R.id.et_sn);
         et_ua = findViewById(R.id.et_ua);
         et_ip_in = findViewById(R.id.et_ip_in);
@@ -272,6 +278,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         typeData.add(new InitReq.TypeData("sn", et_sn.getText().toString()));
         typeData.add(new InitReq.TypeData("ua", et_ua.getText().toString()));
         typeData.add(new InitReq.TypeData("gaid", et_gaid.getText().toString()));
+        typeData.add(new InitReq.TypeData("oaid", et_oaid.getText().toString()));
         typeData.add(new InitReq.TypeData("ip_in", et_ip_in.getText().toString()));
         typeData.add(new InitReq.TypeData("ip_out", et_ip_out.getText().toString()));
         typeData.add(new InitReq.TypeData("ua", et_ua.getText().toString()));
@@ -413,4 +420,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    public void onIdsValid(String ids) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                et_oaid.setText(ids);
+            }
+        });
+    }
 }
