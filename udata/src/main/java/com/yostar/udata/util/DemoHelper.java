@@ -123,20 +123,21 @@ public class DemoHelper implements IIdentifierListener {
         }
         // 获取Id信息
         // 注：IdSupplier中的内容为本次调用MdidSdkHelper.InitSdk()的结果，不会实时更新。 如需更新，需调用MdidSdkHelper.InitSdk()
-        boolean isSupported = supplier.isSupported();
-        boolean isLimited  = supplier.isLimited();
+//        boolean isSupported = supplier.isSupported();
+//        boolean isLimited  = supplier.isLimited();
         String oaid=supplier.getOAID();
-        String vaid=supplier.getVAID();
-        String aaid=supplier.getAAID();
-
-        //TODO (7) 自定义后续流程，以下显示到UI的示例
-        String idsText= "support: " + (isSupported ? "true" : "false") +
-                "\nlimit: " + (isLimited ? "true" : "false") +
-                "\nOAID: " + oaid +
-                "\nVAID: " + vaid +
-                "\nAAID: " + aaid + "\n";
-        Log.d(TAG, "onSupport: ids: \n" + idsText);
-        appIdsUpdater.onIdsValid(idsText);
+//        String vaid=supplier.getVAID();
+//        String aaid=supplier.getAAID();
+//
+//        //TODO (7) 自定义后续流程，以下显示到UI的示例
+//        String idsText= "support: " + (isSupported ? "true" : "false") +
+//                "\nlimit: " + (isLimited ? "true" : "false") +
+//                "\nOAID: " + oaid +
+//                "\nVAID: " + vaid +
+//                "\nAAID: " + aaid + "\n";
+//        Log.d(TAG, "onSupport: ids: \n" + idsText);
+//        appIdsUpdater.onIdsValid(idsText);
+        appIdsUpdater.onIdsValid(oaid);
     }
 
     public interface AppIdsUpdater{
